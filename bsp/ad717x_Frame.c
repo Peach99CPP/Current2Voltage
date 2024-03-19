@@ -922,8 +922,8 @@ int32_t AD717X_Init(PAD7172_Struct dev_7172)
 			dev_7172->filter_configuration[setup_index].odr);
 		if (ret < 0)
 			return ret;
-		ret = AD717X_Configure_FilterOrder(dev_7172,
-			dev_7172->filter_configuration[setup_index].oder, setup_index);
+		ret = AD717X_Configure_FilterOrder(dev_7172, setup_index,
+			dev_7172->filter_configuration[setup_index].oder);
 	}
 	/* Set Conversion Mode */
 	ret = ad717x_set_adc_mode(dev_7172, dev_7172->mode);
@@ -1067,11 +1067,11 @@ int32_t AD717X_GetChannelValue(PAD7172_Struct dev, uint8_t channel)
 /// @brief 配置滤波器寄存器的滤波器选择
 /// @param dev  句柄
 /// @param filter_orderSel  选择哪个滤波器 0代表sinc5+sinc1(默认)  3代表sinc3
-/// @param filcon_id 
+/// @param filcon_id       滤波器寄存器的ID 0-3
 /// @return 
 int32_t AD717X_Configure_FilterOrder(PAD7172_Struct dev,
-	uint8_t filter_orderSel,
-	uint8_t filcon_id)
+	uint8_t filcon_id,
+	uint8_t filter_orderSel)
 {
 	ad717x_st_reg* filtcon_reg;
 	int32_t ret;
