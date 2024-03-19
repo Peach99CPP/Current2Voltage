@@ -168,7 +168,7 @@ uint8_t AD7172_Calib(enum ad717x_mode  calib_mode)
         while (gAd7172.GetDinPin() == 1);//高电平说明在校准，低电平表示校准结束
         AD717X_ReadRegister(&gAd7172, AD717X_ADCMODE_REG);
         uint8_t bits_4_to_6 = ((AD717X_GetReg(&gAd7172, AD717X_ADCMODE_REG)->value) >> 4) & 0x07;
-        printf("ADC Mode Register Val: %d\n", bits_4_to_6);//查看数据手册的对照表 
+        printf("ADC Mode Register Val: 0x%x\n", bits_4_to_6);//查看数据手册的对照表 
         ad717x_set_channel_status(&gAd7172, i, 0);//校准完毕关闭通道
         AD717X_ReadRegister(&gAd7172, AD717X_CHMAP0_REG + i);//读取通道映射寄存器
         printf("channel %d calib done \n", i);
@@ -202,6 +202,8 @@ void AD7172_DebugFunction(void)
 {
     AD717X_ReadRegister(&gAd7172, AD717X_ADCMODE_REG);
     int32_t adcmode_val = AD717X_GetReg(&gAd7172, AD717X_ADCMODE_REG)->value;
-    printf("ADCMODE Register Value: %04x\n", adcmode_val);
+    printf("ADCMODE Register Value: 0X%04x\n", adcmode_val);
+    AD717X_ReadRegister(&gAd7172, AD717X_IFMODE_REG);
+    printf("IFMODE Register Value: 0X%04x\n", AD717X_GetReg(&gAd7172, AD717X_IFMODE_REG)->value);
 }
 

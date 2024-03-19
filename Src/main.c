@@ -115,6 +115,7 @@ int main(void)
 #if USE_CALIB 
   AD7172_Calib(INTERNAL_OFFSET_CALIB);
 #endif
+	AD7172_DebugFunction();
   ad717x_set_data_state(&gAd7172, true);
   while (1)
   {

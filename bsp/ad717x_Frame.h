@@ -610,8 +610,8 @@ int32_t AD717X_GetChannelValue(PAD7172_Struct dev, uint8_t channel);
 int32_t ad717x_set_data_state(PAD7172_Struct dev,
 	uint8_t dataState);
 int32_t AD717X_Configure_FilterOrder(PAD7172_Struct dev,
-	uint8_t filter_orderSel,
-	uint8_t filcon_id);
+	uint8_t filcon_id, 
+	uint8_t filter_orderSel);
 void AD717X_ReadRegs(PAD7172_Struct dev);
 void AD717X_LoadRegsPtr(PAD7172_Struct dev);
 
