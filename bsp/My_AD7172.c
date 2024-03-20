@@ -104,7 +104,7 @@ void AD7172Loop(void) {
         double voltage = ((double)adcValue / (1 << 24)) * REF_Voltage;
         //        HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
                 // Print the voltage reading with maximum precision
-        printf("/*%.15f,%d*/\n", voltage, 0);
+        printf("VoltageVal:%.15f\n", voltage);
         //        HAL_UART_Transmit(&huart1, (uint8_t*)"test\n", 5, 0XFF);
     }
     else
