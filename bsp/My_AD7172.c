@@ -147,6 +147,7 @@ uint8_t AD7172_Calib(enum ad717x_mode  calib_mode)
     gAd7172.SetCsPin(0);//拉低片选
     HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, LED_OFF);//提示正在校准
     enum ad717x_mode oldMode = gAd7172.mode;//保存旧模式
+    UNUSED(oldMode);//TODO 解决变量的警告
     //关闭所有通道
     for (uint8_t i = 0; i < CHANEL_NUM; i++)
     {
@@ -165,29 +166,32 @@ uint8_t AD7172_Calib(enum ad717x_mode  calib_mode)
         ad717x_set_adc_mode(&gAd7172, gAd7172.mode);//设置为校准模式
         gAd7172.SetCsPin(0);//拉低片选使得转换后RDY会输出低电平
         //监视引脚信号
-        while (gAd7172.GetDinPin() == 1);//高电平说明在校准，低电平表示校准结束
-        AD717X_ReadRegister(&gAd7172, AD717X_ADCMODE_REG);
-        uint8_t bits_4_to_6 = ((AD717X_GetReg(&gAd7172, AD717X_ADCMODE_REG)->value) >> 4) & 0x07;
-        printf("ADC Mode Register Val: 0x%x\n", bits_4_to_6);//查看数据手册的对照表 
-        ad717x_set_channel_status(&gAd7172, i, 0);//校准完毕关闭通道
-        AD717X_ReadRegister(&gAd7172, AD717X_CHMAP0_REG + i);//读取通道映射寄存器
-        printf("channel %d calib done \n", i);
+        while (gAd7172.GetDinPin() == 1) //高电平说明在校准，低电平表示校准结束
+        {
+            printf("calib....\n");
+        }
+        // AD717X_ReadRegister(&gAd7172, AD717X_ADCMODE_REG);
+        // uint8_t bits_4_to_6 = ((AD717X_GetReg(&gAd7172, AD717X_ADCMODE_REG)->value) >> 4) & 0x07;
+        // printf("ADC Mode Register Val: 0x%x\n", bits_4_to_6);//查看数据手册的对照表 
+        // ad717x_set_channel_status(&gAd7172, i, 0);//校准完毕关闭通道
+        // AD717X_ReadRegister(&gAd7172, AD717X_CHMAP0_REG + i);//读取通道映射寄存器
+        // printf("channel %d calib done \n", i);
     }
     HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, LED_ON);
-    //复原原先的模式
-    gAd7172.mode = oldMode;
-    ad717x_set_adc_mode(&gAd7172, gAd7172.mode);
-    AD717X_ReadRegister(&gAd7172, AD717X_ADCMODE_REG);
-    printf("current ADC mode = %02x \n", ((AD717X_GetReg(&gAd7172, AD717X_ADCMODE_REG)->value) >> 4) & 0x07);
+    // //复原原先的模式
+    // gAd7172.mode = oldMode;
+    // ad717x_set_adc_mode(&gAd7172, gAd7172.mode);
+    // AD717X_ReadRegister(&gAd7172, AD717X_ADCMODE_REG);
+    // printf("current ADC mode = %02x \n", ((AD717X_GetReg(&gAd7172, AD717X_ADCMODE_REG)->value) >> 4) & 0x07);
 
-    //只开启通道零
-    AD717X_GetReg(&gAd7172, AD717X_CHMAP0_REG + 0)->value = 0;
-    AD717X_GetReg(&gAd7172, AD717X_OFFSET0_REG + 0)->value = 0;
-    AD717X_GetReg(&gAd7172, AD717X_GAIN0_REG + 0)->value = 0;
-    AD717X_ReadRegister(&gAd7172, AD717X_OFFSET0_REG);
-    AD717X_ReadRegister(&gAd7172, AD717X_GAIN0_REG);
-    ad717x_set_channel_status(&gAd7172, 0, 1);
-    AD717X_ReadRegister(&gAd7172, AD717X_CHMAP0_REG + 0);
+    // //只开启通道零
+    // AD717X_GetReg(&gAd7172, AD717X_CHMAP0_REG + 0)->value = 0;
+    // AD717X_GetReg(&gAd7172, AD717X_OFFSET0_REG + 0)->value = 0;
+    // AD717X_GetReg(&gAd7172, AD717X_GAIN0_REG + 0)->value = 0;
+    // AD717X_ReadRegister(&gAd7172, AD717X_OFFSET0_REG);
+    // AD717X_ReadRegister(&gAd7172, AD717X_GAIN0_REG);
+    // ad717x_set_channel_status(&gAd7172, 0, 1);
+    // AD717X_ReadRegister(&gAd7172, AD717X_CHMAP0_REG + 0);
     gAd7172.SetCsPin(1);//拉高片选
     printf("校准结束\n");
     return 0;
@@ -203,7 +207,20 @@ void AD7172_DebugFunction(void)
     AD717X_ReadRegister(&gAd7172, AD717X_ADCMODE_REG);
     int32_t adcmode_val = AD717X_GetReg(&gAd7172, AD717X_ADCMODE_REG)->value;
     printf("ADCMODE Register Value: 0X%04x\n", adcmode_val);
+    //判断ADC模式寄存器的4-6比特位置， 若为3则开始设置其为连续转换模式
+    uint8_t bits_4_to_6 = (adcmode_val >> 4) & 0x07;
+    if (bits_4_to_6 == 2)//0B010代表待机模式
+    {
+        printf("ADC Mode Register Mode standby \nswitch mode to continuous mode \n");
+        ad717x_set_adc_mode(&gAd7172, CONTINUOUS);
+        AD717X_ReadRegister(&gAd7172, AD717X_ADCMODE_REG);
+    }
+    else
+    {
+        printf("ADC Mode Register Mode not standby 0X%1x \n", bits_4_to_6);
+    }
     AD717X_ReadRegister(&gAd7172, AD717X_IFMODE_REG);
-    printf("IFMODE Register Value: 0X%04x\n", AD717X_GetReg(&gAd7172, AD717X_IFMODE_REG)->value);
+    printf("IFMODE Register Value: 0X%04x \n", AD717X_GetReg(&gAd7172, AD717X_IFMODE_REG)->value);
+    AD717X_ReadRegs(&gAd7172);
 }
 

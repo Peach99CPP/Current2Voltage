@@ -1004,9 +1004,7 @@ int32_t AD717X_OnlyRead32(PAD7172_Struct dev)
 	int32_t value = 0;
 	uint8_t reBuff[4] = { 0 };
 	uint8_t tempBuff[4] = { 0 };
-	// 使得DOUT输出为RDY数据 此时若为低电平 则说明转换完成
-	dev->SetCsPin(1);//根据DOUT_RESET位的定义 需要拉高CS使得此时DOUT输出为RDY信息
-	HAL_Delay(1);
+	// 拉低片选  此时RDY若为低电平 则说明转换完成
 	dev->SetCsPin(0);
 
 	// 判断DOUT  MISO引脚电平 如果为低电平则读取信号 高电平则跳过

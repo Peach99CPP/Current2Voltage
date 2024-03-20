@@ -17,9 +17,18 @@
 
 extern SPI_HandleTypeDef hspi1;
 #define USED_SPI  hspi1  //hsp1 
+//CS 
 #define USED_SPI_CS_PORT AD_CS_GPIO_Port //CS 
 #define USED_SPI_CS_PIN AD_CS_Pin
-
+//PA6 MISO
+#define USED_SPI_MISO_PORT GPIOA
+#define USED_SPI_MISO_PIN  GPIO_PIN_6
+//PA7 MOSI
+#define USED_SPI_MOSI_PORT GPIOA
+#define USED_SPI_MOSI_PIN  GPIO_PIN_7
+//PA5 SCK
+#define USED_SPI_SCK_PORT GPIOA
+#define USED_SPI_SCK_PIN  GPIO_PIN_5
 
 /*************************************************************
 ** Function name:       SpiWriteAndRead
@@ -156,7 +165,7 @@ int32_t stm32_spi_receive(uint8_t* data, uint16_t bytes_number) {
 
 // SPI 的 MISO信号引脚 读取功能
 uint8_t spi_miso_input(void) {
-	return (uint8_t)HAL_GPIO_ReadPin(USED_SPI_CS_PORT, USED_SPI_CS_PIN);//通过宏定义进行切换
+	return (uint8_t)HAL_GPIO_ReadPin(USED_SPI_MISO_PORT, USED_SPI_MISO_PIN);//通过宏定义进行切换
 }
 
 

@@ -72,6 +72,15 @@ int fgetc(FILE* f)
   HAL_UART_Receive(&huart1, &ch, 1, 0xffff);
   return ch;
 }
+/// @brief 实现输出二进制
+/// @param num 待转换的值
+void print_binary(int num) {
+  //将num转换为二进制通过pritnf输出，以循环实现
+  while (num != 0) {
+    printf("%d", num % 2);
+    num /= 2;
+  }
+}
 /* USER CODE END 0 */
 
 /**
@@ -112,15 +121,21 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-#if USE_CALIB 
-  AD7172_Calib(INTERNAL_OFFSET_CALIB);
+#if USE_CALIB  //必须在调试模式下分步运行
+  // AD7172_Calib(INTERNAL_OFFSET_CALIB);
+  // HAL_Delay(2);
+  // AD7172_Calib(SYS_OFFSET_CALIB);
+  // HAL_Delay(2);
+  AD7172_Calib(SYS_GAIN_CALIB);
+  HAL_Delay(2);
 #endif
-	AD7172_DebugFunction();
+  AD7172_DebugFunction();
   ad717x_set_data_state(&gAd7172, true);
   while (1)
   {
     /* USER CODE END WHILE */
-
+    AD7172Loop();
+    HAL_Delay(10);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
