@@ -11,7 +11,7 @@
 #include "main.h"
 
 
-#define REF_Voltage 4.98 ; // 参考电压
+#define REF_Voltage 4.980 ; // 参考电压
 #define Negetive_REF_Voltage -5.0 // 参考电压
 
 

@@ -38,6 +38,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define USE_CALIB 1 //TODO 校准是有必要的 只运行系统增益校准
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -122,12 +123,11 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 #if USE_CALIB  //必须在调试模式下分步运行
-  // AD7172_Calib(INTERNAL_OFFSET_CALIB);
-  // HAL_Delay(2);
-  // AD7172_Calib(SYS_OFFSET_CALIB);
-  // HAL_Delay(2);
+  //经过测试发现系统增益校准是必须的，其他增益选项校准是可选的
   AD7172_Calib(SYS_GAIN_CALIB);
   HAL_Delay(2);
+#else
+  printf("no calib\n");
 #endif
   AD7172_DebugFunction();
   ad717x_set_data_state(&gAd7172, true);

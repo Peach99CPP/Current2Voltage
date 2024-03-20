@@ -67,7 +67,6 @@ extern "C" {
 /* USER CODE BEGIN Private defines */
 #define LED_ON GPIO_PIN_RESET
 #define LED_OFF GPIO_PIN_SET
-#define USE_CALIB 1
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
