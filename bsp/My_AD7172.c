@@ -11,9 +11,9 @@
 #include "main.h"
 
 
-#define REF_Voltage 4.980 ; // 参考电压
+#define REF_Voltage 4.96 ; // 参考电压
 #define Negetive_REF_Voltage -5.0 // 参考电压
-
+double OFFSET_CALIBRATION = 0.0, GAIN_CALIBRATION_FACTOR = 1.0;
 
 AD7172_Struct gAd7172; // AD7172 structure句柄
 
@@ -31,7 +31,8 @@ void AD7172ParmInit(void) {
     gAd7172.setups[2].bi_unipolar = 0;
     gAd7172.setups[3].bi_unipolar = 0;
     // 设置参考源
-    gAd7172.setups[0].ref_source = EXTERNAL_REF;//外部参考源
+    //TODO  外部参考源则宏定义参考电压4.98 内部参考源则宏定义参考电压2.5
+    gAd7172.setups[0].ref_source = EXTERNAL_REF;
     gAd7172.setups[1].ref_source = EXTERNAL_REF;
     gAd7172.setups[2].ref_source = EXTERNAL_REF;
     gAd7172.setups[3].ref_source = EXTERNAL_REF;
@@ -104,7 +105,9 @@ void AD7172Loop(void) {
         double voltage = ((double)adcValue / (1 << 24)) * REF_Voltage;
         //        HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
                 // Print the voltage reading with maximum precision
-        printf("VoltageVal:%.15f\n", voltage);
+        // printf("/*%.15f*/\n", voltage);//适配serial studio
+
+        printf("Voltage, Current: %.15lf, %.4lf fA\n", voltage, voltage * 1e4); //适配vofa+串口调试助手 1V= 10000fA
         //        HAL_UART_Transmit(&huart1, (uint8_t*)"test\n", 5, 0XFF);
     }
     else
@@ -222,5 +225,53 @@ void AD7172_DebugFunction(void)
     AD717X_ReadRegister(&gAd7172, AD717X_IFMODE_REG);
     printf("IFMODE Register Value: 0X%04x \n", AD717X_GetReg(&gAd7172, AD717X_IFMODE_REG)->value);
     AD717X_ReadRegs(&gAd7172);
+}
+
+void AD7172_SoftCalib(enum ad717x_soft_calib_mode mode)
+{
+    //TODO
+    if (mode == OFFSET_CALIB)
+    {
+        //TODO
+        printf("OFFSET CALIBRATION\n");
+        while (AD717X_OnlyRead32(&gAd7172) != 0);//确保数据准备好
+        uint32_t adcValue = gAd7172.adcValue[0];
+        // Convert the 24-bit ADC value to a voltage reading
+        double voltage = ((double)adcValue / (1 << 24)) * REF_Voltage;
+        OFFSET_CALIBRATION = voltage;
+        printf("OFFSET_CALIBRATION = %.15lf\n", OFFSET_CALIBRATION);
+    }
+    else if (mode == GAIN_CALIB)
+    {
+        //TODO
+        printf("GAIN CALIBRATION\n");
+        while (AD717X_OnlyRead32(&gAd7172) != 0);//确保数据准备好
+        uint32_t adcValue = gAd7172.adcValue[0];
+        // Convert the 24-bit ADC value to a voltage reading
+        double voltage = ((double)adcValue / (1 << 24)) * REF_Voltage;
+        double REF_VoltageVal = REF_Voltage;
+        GAIN_CALIBRATION_FACTOR = REF_VoltageVal / (voltage - OFFSET_CALIBRATION);
+        printf("GAIN_CALIBRATION_FACTOR = %.15lf\n", GAIN_CALIBRATION_FACTOR);
+    }
+    else
+    {
+        //TODO
+        printf("software calib  mode error\n");
+    }
+}
+void ADA7172_SOFT_Loop(void)
+{
+    if (AD717X_OnlyRead32(&gAd7172) == 0)
+    {
+        //数据存放在gAd7172.的adcValue数组中
+        uint32_t adcValue = gAd7172.adcValue[0];
+        // Convert the 24-bit ADC value to a voltage reading
+        double voltage = (((double)adcValue / (1 << 24)) - OFFSET_CALIBRATION) * GAIN_CALIBRATION_FACTOR;
+
+        printf("SOFT!Voltage, Current: %.15lf, %.4lf pA\n", voltage, voltage * 1e4); //适配vofa+串口调试助手 1V= 10000fA
+        //        HAL_UART_Transmit(&huart1, (uint8_t*)"test\n", 5, 0XFF);
+    }
+    else
+        printf("Error in reading\n");
 }
 

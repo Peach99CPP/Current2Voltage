@@ -38,7 +38,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define USE_CALIB 1 //TODO 校准是有必要的 只运行系统增益校准
+#define USE_CALIB 1 //TODO 1:使用校准 2:使用软件校准 0:不使用校准
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -60,21 +60,23 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-/* USER CODE BEGIN 0 */
+/// @brief 重定向printf函数
 int fputc(int ch, FILE* f) {
   uint8_t temp[1] = { ch };
   HAL_UART_Transmit(&huart1, temp, 1, 0xffff);
   return ch;
 }
-
+/// @brief 重定向scanf函数
+/// @param f 
+/// @return 
 int fgetc(FILE* f)
 {
   uint8_t ch = 0;
   HAL_UART_Receive(&huart1, &ch, 1, 0xffff);
   return ch;
 }
-/// @brief 实现输出二进制
-/// @param num 待转换的值
+/// @brief 实现输出二进�?
+/// @param num 待转换的�?
 void print_binary(int num) {
   //将num转换为二进制通过pritnf输出，以循环实现
   while (num != 0) {
@@ -122,9 +124,18 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-#if USE_CALIB  //必须在调试模式下分步运行
-  //经过测试发现系统增益校准是必须的，其他增益选项校准是可选的
+#if USE_CALIB == 1  //必须在调试模式下分步运行
+  //经过测试发现系统增益校准是必须的，其他增益可选
+  HAL_Delay(2);
+  AD7172_Calib(SYS_OFFSET_CALIB);
+  HAL_Delay(2);
   AD7172_Calib(SYS_GAIN_CALIB);
+  HAL_Delay(2);
+#elif USE_CALIB == 2
+  //软件校准 本质上是靠完成一次ADC值的读取，然后根据读取的值进行校准                            
+  AD7172_SoftCalib(OFFSET_CALIB);
+  HAL_Delay(2);
+  AD7172_SoftCalib(GAIN_CALIB);
   HAL_Delay(2);
 #else
   printf("no calib\n");
@@ -134,9 +145,14 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-    AD7172Loop();
-    HAL_Delay(10);
+
     /* USER CODE BEGIN 3 */
+#if USE_CALIB == 2
+    ADA7172_SOFT_Loop();
+#else
+    AD7172Loop();
+#endif
+    HAL_Delay(300);
   }
   /* USER CODE END 3 */
 }
